@@ -32,11 +32,12 @@ app.post("/api/v1/common/login", common.login);
 /*----- end common api--------*/
 
 /*----- start admin api--------*/
-app.post("/api/v1/users", middleware.validateAdminToken, user.getListUsers);
-app.post("/api/v1/users", middleware.validateAdminToken, user.detailUser);
-app.post("/api/v1/users", middleware.validateAdminToken, user.deleteUser);
-app.post("/api/v1/users", middleware.validateToken, user.updateUser);
-app.post("/api/v1/users", middleware.validateAdminToken, user.addUser);
+app.post("/api/v1/users/get-list-users", middleware.validateAdminToken, user.getListUsers);
+app.post("/api/v1/users/detail-user", middleware.validateAdminToken, user.detailUser);
+app.post("/api/v1/users/add-user", middleware.validateAdminToken, user.addUser);
+app.post("/api/v1/users/delete-user", middleware.validateAdminToken, user.deleteUser);
+app.post("/api/v1/users/update-user", middleware.validateToken, user.updateUser);
+app.post("/api/v1/users/get-list-role", middleware.validateToken, user.getListRole);
 
 app.post("/api/v1/workspaces/get-list-workspaces", middleware.validateAdminToken, workpace.getListWorkspace);
 app.post("/api/v1/workspaces/create-workspace", middleware.validateAdminToken, workpace.createWorkspace);
@@ -45,19 +46,16 @@ app.post("/api/v1/workspaces/delete-workspace", middleware.validateAdminToken, w
 app.post("/api/v1/workspaces/get-detail-workspace", middleware.validateAdminToken, workpace.getWorkspaceById);
 /*----- end admin api--------*/
 
-app.post("/api/v1/plan/get-list-plan", middleware.validateAdminToken, plan.getListPlan);
-app.post("/api/v1/plan/create-plan", middleware.validateAdminToken, plan.createPlan);
+app.post("/api/v1/plans/get-list-plan", middleware.validateAdminToken, plan.getListPlan);
+app.post("/api/v1/plans/create-plan", middleware.validateAdminToken, plan.createPlan);
 app.post("/api/v1/plans/delete-plan", middleware.validateAdminToken, plan.deletePlan);
-app.post("/api/v1/plan/get-detail-plan", middleware.validateAdminToken, plan.getDetailPlan);
-app.post("/api/v1/plan/get-detail-plan", middleware.validateAdminToken, plan.acceptTheProduct);
+app.post("/api/v1/plans/get-detail-plan", middleware.validateAdminToken, plan.getDetailPlan);
+app.post("/api/v1/plans/accept-product", middleware.validateAdminToken, plan.acceptTheProduct);
 
 app.post("/api/v1/plans/get-list-task", middleware.validateToken, plan.getListTask);
 app.post("/api/v1/plans/update-process", middleware.validateToken, plan.updateProcess);
-app.post(
-    "/api/v1/plans/report-process",
-    middleware.validateToken,
-    plan.reportProcess
-);
+app.post("/api/v1/plans/report-process", middleware.validateToken, plan.reportProcess);
+
 app.post("/api/v1/material", middleware.validateAdminToken, material.getListMaterial);
 app.post("/api/v1/material/import-request", middleware.validateAdminToken, material.importRequest);
 app.post("/api/v1/material/approve-request", middleware.validateAdminToken, material.approveRequset);

@@ -154,7 +154,7 @@ const importRequest = async (request, response, next) => {
 const approveRequset = async (request, response) => {
     try {
         const approveUser = request.userId;
-        const purchaseRequestID = request.body.purchaseRequestID;
+        const purchaseRequestID = request.body.requestId;
         const status = request.body.status;
         const reason = request.body.reason;
 
@@ -226,7 +226,7 @@ const getListApprove = async (request, response) => {
     try {
         const userId = request.userId;
         const getListApprove = `
-            SELECT a.id, a.purchase_requestID, u.full_name AS user_created, us.full_name AS user_approve, p.task_name, a.status, a.reason, a.date
+            SELECT a.id, a.purchase_requestID, u.full_name AS user_created, us.full_name AS user_approve, p.name, a.status, a.reason, a.date
             FROM approver a LEFT JOIN purchase_request pr ON a.purchase_requestID = pr.id
             LEFT JOIN users u ON u.id = pr.user_id
             LEFT JOIN users us ON us.id = a.approve_user

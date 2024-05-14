@@ -1,10 +1,11 @@
+const { request, response } = require("express");
 const helper = require("./helper");
 const query = require("./sqlPool");
 
 const getListUsers = async (request, response) => {
     try {
         const getAllUsersQuery = `
-            SELECT u.*, ws.name AS workspaceName, r.name AS roleName FROM users u 
+            SELECT u.id, u.user_name, u.full_name, u.address, u.status, ws.name AS workspaceName, r.name AS roleName FROM users u 
             LEFT JOIN workspaces ws ON u.workspace_id = ws.id
             LEFT JOIN roles r ON u.role_id = r.id
             WHERE u.is_deleted = 0 AND u.status = 1 AND ws.is_deleted = 0
@@ -22,11 +23,18 @@ const getListUsers = async (request, response) => {
 
 const detailUser = async (request, response) => {
     try {
-        const userId = request.body.id;
+        const userId = request.body.userId;
         const getUserQuery = `
-            SELECT * FROM users WHERE id = ${userId} AND is_deleted = 0
+            SELECT u.id, u.user_name, u.full_name, u.address, u.status, ws.name AS workspaceName, r.name AS roleName FROM users u 
+            LEFT JOIN workspaces ws ON u.workspace_id = ws.id
+            LEFT JOIN roles r ON u.role_id = r.id
+            WHERE u.is_deleted = 0 AND u.status = 1 AND u.id = ${userId}
         `;
-        await query(getUserQuery);
+        const user = await query(getUserQuery);
+        return response.status(200).json({
+            status: "success",
+            data: user,
+        });
     } catch (error) {
         return helper.Helper.dbErrorReturn(error, response);
     }
@@ -84,7 +92,7 @@ const addUser = async (request, response) => {
 };
 const deleteUser = async (request, response) => {
     try {
-        const userId = request.body.id;
+        const userId = request.body.userId;
         const user = await query(
             `SELECT * FROM users WHERE id = ${userId} AND is_deleted = 0`
         );
@@ -104,7 +112,7 @@ const deleteUser = async (request, response) => {
     }
 };
 
-const updateUser = async function (request, response) {
+const updateUser = async (request, response) => {
     try {
         const userId = request.userId;
         const newUserName = request.body.username;
@@ -143,10 +151,24 @@ const updateUser = async function (request, response) {
         return helper.Helper.dbErrorReturn(error, response);
     }
 };
+
+const getListRole = async (request, response) => {
+    try {
+        const getListRoleQuery = `SELECT * FROM roles WHERE status = 1 AND is_deleted =0`;
+        const role = await query(getListRoleQuery);
+        return response.status(200).json({
+            status: "success",
+            data: role,
+        });
+    } catch (error) {
+        return helper.Helper.dbErrorReturn(error, response);
+    }
+};
 module.exports = {
     getListUsers,
     detailUser,
     addUser,
     deleteUser,
     updateUser,
+    getListRole
 };

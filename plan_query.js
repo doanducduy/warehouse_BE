@@ -39,19 +39,6 @@ function validateParameters(params, validate, validateType) {
 
 const getListPlan = async (request, response) => {
     try {
-        const planId = await request.body.planId;
-        const checkStatusQuery = `SELECT COUNT(*) AS total, SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS totalStatusOne
-        FROM detail_plan WHERE plan_id = ${planId}`;
-        const statusResult = await query(checkStatusQuery);
-
-        const total = statusResult[0].total;
-        const totalStatusOne = statusResult[0].totalStatusOne;
-
-        if (total === totalStatusOne) {
-            const updatePlanStatusQuery = `UPDATE plans SET status = 1 WHERE id = ${planId}`;
-            await query(updatePlanStatusQuery);
-        }
-
         const getPlanQuery = `
             SELECT p.id, p.name, u.full_name AS user_manage, p.fromDate, p.toDate, p.status
             FROM plans p LEFT JOIN users u ON p.user_manage = u.id
@@ -318,7 +305,7 @@ const getMaterialIds = async (materialNames) => {
 
 const deletePlan = async (request, response) => {
     try {
-        const planId = request.body.id;
+        const planId = request.body.planId;
 
         const deleteQuery = `
             DELETE FROM plans WHERE id =${planId}
@@ -339,9 +326,8 @@ const getDetailPlan = async (request, response) => {
         const planId = request.body.planId;
 
         const getPlanQuery = `
-            SELECT p.id, u.full_name AS user_created, p.name, us.full_name AS user_manage, p.fromDate, p.toDate, p.status
-            FROM plans p LEFT JOIN users u ON p.user_created = u.id
-            LEFT JOIN users us ON p.user_manage = us.id
+            SELECT p.id, p.name, us.full_name AS user_manage, p.fromDate, p.toDate, p.status
+            FROM plans p LEFT JOIN users us ON p.user_manage = us.id
             WHERE p.id = ${planId}
         `;
         const plan = await query(getPlanQuery);
@@ -406,7 +392,7 @@ const getListTask = async (request, response) => {
 const updateProcess = async (request, response) => {
     try {
         // const detailID = request.params.detailId;
-        const planId = request.body.plan_id;
+        const planId = request.body.planId;
         const userId = request.userId;
         const status = request.body.status;
         const updateQuery = `UPDATE detail_plan SET status = ${status} WHERE plan_id = ${planId} AND employee= ${userId}`;
