@@ -4,17 +4,37 @@ const query = require("./sqlPool");
 
 const getListUsers = async (request, response) => {
     try {
+        const page = request.query.page;
+        const limit = request.query.limit;
+        const offset = (page - 1) * limit;
+
         const getAllUsersQuery = `
             SELECT u.id, u.user_name, u.full_name, u.address, u.status, ws.name AS workspaceName, r.name AS roleName FROM users u 
             LEFT JOIN workspaces ws ON u.workspace_id = ws.id
             LEFT JOIN roles r ON u.role_id = r.id
             WHERE u.is_deleted = 0 AND u.status = 1 AND ws.is_deleted = 0
+            ORDER BY u.id DESC LIMIT ${+limit} OFFSET ${+offset}
         `;
         const users = await query(getAllUsersQuery);
-
+        const totalUsersQuery = `
+            SELECT COUNT(*) AS count
+            FROM users u LEFT JOIN roles r ON u.role_id = r.id
+            WHERE u.is_deleted=0 AND r.is_deleted=0
+        `;
+        const totalPageData = await query(totalUsersQuery);
+        const totalCount = Math.ceil(+totalPageData[0]?.count);
+        const totalPage = Math.ceil(+totalPageData[0]?.count / limit);
         return response.status(200).json({
             status: "success",
-            data: users,
+            data: {
+                pagination: {
+                    pageIndex: +page,
+                    pageSize: +limit,
+                    totalPage,
+                    totalCount,
+                },
+                users,
+            },
         });
     } catch (error) {
         return helper.Helper.dbErrorReturn(error, response);
@@ -170,5 +190,5 @@ module.exports = {
     addUser,
     deleteUser,
     updateUser,
-    getListRole
+    getListRole,
 };

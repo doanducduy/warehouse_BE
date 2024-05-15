@@ -40,6 +40,7 @@ app.post("/api/v1/users/update-user", middleware.validateToken, user.updateUser)
 app.post("/api/v1/users/get-list-role", middleware.validateToken, user.getListRole);
 
 app.post("/api/v1/workspaces/get-list-workspaces", middleware.validateAdminToken, workpace.getListWorkspace);
+app.post("/api/v1/workspaces/get-employee", middleware.validateAdminToken, workpace.getUserIsEmployee);
 app.post("/api/v1/workspaces/create-workspace", middleware.validateAdminToken, workpace.createWorkspace);
 app.post("/api/v1/workspaces/update-workspace", middleware.validateAdminToken, workpace.updateWorkspace);
 app.post("/api/v1/workspaces/delete-workspace", middleware.validateAdminToken, workpace.deleteWorkspace);

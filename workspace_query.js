@@ -21,7 +21,19 @@ const getListWorkspace = async (request, response) => {
         return helper.Helper.dbErrorReturn(error, response);
     }
 };
-
+const getUserIsEmployee = async (request, response) => {
+    try {
+        const getUserIsEmployeeQuery = `SELECT id, user_name, full_name FROM users WHERE role_id = 3`;
+        const users = await query(getUserIsEmployeeQuery);
+        return response.status(200).json({
+            status: "success",
+            data: users,
+        });
+    } catch (error) {
+        console.error(error);
+        return helper.Helper.dbErrorReturn(error, response);
+    }
+}
 const createWorkspace = async (request, response) => {
     try {
         const userId = request.body.userId;
@@ -156,6 +168,7 @@ const getWorkspaceById = async (request, response) => {
 
 module.exports = {
     getListWorkspace,
+    getUserIsEmployee,
     createWorkspace,
     updateWorkspace,
     deleteWorkspace,
