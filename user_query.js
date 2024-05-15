@@ -13,7 +13,7 @@ const getListUsers = async (request, response) => {
             LEFT JOIN workspaces ws ON u.workspace_id = ws.id
             LEFT JOIN roles r ON u.role_id = r.id
             WHERE u.is_deleted = 0 AND u.status = 1 AND ws.is_deleted = 0
-            ORDER BY u.id DESC LIMIT ${+limit} OFFSET ${+offset}
+            ORDER BY u.id DESC LIMIT ${+limit} OFFSET ${+offset}     
         `;
         const users = await query(getAllUsersQuery);
         const totalUsersQuery = `

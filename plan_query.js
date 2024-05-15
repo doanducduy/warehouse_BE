@@ -39,10 +39,21 @@ function validateParameters(params, validate, validateType) {
 
 const getListPlan = async (request, response) => {
     try {
-        const getPlanQuery = `
-            SELECT p.id, p.name, u.full_name AS user_manage, p.fromDate, p.toDate, p.status
-            FROM plans p LEFT JOIN users u ON p.user_manage = u.id
-        `;
+        const userId = request.userId;
+        const role = request.role;
+        let getPlanQuery;
+        if (role === 2) {
+            getPlanQuery = `
+                SELECT p.id, p.name, u.full_name AS user_manage, p.fromDate, p.toDate, p.status
+                FROM plans p LEFT JOIN users u ON p.user_manage = u.id
+                WHERE p.user_manage = ${userId}
+            `;
+        } else if (role === 1) {
+            getPlanQuery = `
+                SELECT p.id, p.name, u.full_name AS user_manage, p.fromDate, p.toDate, p.status
+                FROM plans p LEFT JOIN users u ON p.user_manage = u.id
+            `;
+        }
         const plans = await query(getPlanQuery);
         return response.status(200).json({
             status: "success",

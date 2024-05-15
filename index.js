@@ -60,8 +60,8 @@ app.post("/api/v1/plans/report-process", middleware.validateToken, plan.reportPr
 app.post("/api/v1/material", middleware.validateAdminToken, material.getListMaterial);
 app.post("/api/v1/material/import-request", middleware.validateAdminToken, material.importRequest);
 app.post("/api/v1/material/approve-request", middleware.validateAdminToken, material.approveRequset);
-app.post("/api/v1/material/get-list-request", middleware.validateToken, material.getListRequest);
-app.post("/api/v1/material/get-list-approve", middleware.validateToken, material.getListApprove);
+app.post("/api/v1/material/get-list-request", middleware.validateAdminToken, material.getListRequest);
+app.post("/api/v1/material/get-list-approve", middleware.validateAdminToken, material.getListApprove);
 // Serve Swagger UI at /api-docs endpoint
 app.use("/api/swagger", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 

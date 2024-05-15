@@ -38,11 +38,35 @@ function validateParameters(params, validate, validateType) {
 
 const getListMaterial = async (request, response) => {
     try {
-        const getListMaterialQuery = `SELECT * FROM material`;
+        const page = request.query.page;
+        const limit = request.query.limit;
+        const offset = (page - 1) * limit;
+
+        const getListMaterialQuery = `
+            SELECT * FROM material
+            ORDER BY id DESC LIMIT ${+limit} OFFSET ${+offset}     
+        `;
         const material = await query(getListMaterialQuery);
+        const totalMaterialQuery = `
+            SELECT COUNT(*) AS count
+            FROM users u LEFT JOIN roles r ON u.role_id = r.id
+            WHERE u.is_deleted=0 AND r.is_deleted=0
+        `;
+
+        const totalPageData = await query(totalMaterialQuery);
+        const totalCount = Math.ceil(+totalPageData[0]?.count);
+        const totalPage = Math.ceil(+totalPageData[0]?.count / limit);
         return response.status(200).json({
             status: "success",
-            data: material,
+            data: {
+                pagination: {
+                    pageIndex: +page,
+                    pageSize: +limit,
+                    totalPage,
+                    totalCount,
+                },
+                material,
+            },
         });
     } catch (error) {
         return helper.Helper.dbErrorReturn(error, response);
@@ -192,16 +216,25 @@ const approveRequset = async (request, response) => {
 const getListRequest = async (request, response) => {
     try {
         const userId = request.userId;
-        const getListRequestQuery = `
-            SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date
-            FROM purchase_request pr LEFT JOIN plans p ON p.id = pr.plan_id
-            LEFT JOIN users u ON u.id = pr.user_approve
-            WHERE user_id = ${userId}
+        const role = request.role;
+        let getListRequestQuery;
+        if (role === 1) {
+            getListRequestQuery = `
+                SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date
+                FROM purchase_request pr LEFT JOIN plans p ON p.id = pr.plan_id
+                LEFT JOIN users u ON u.id = pr.user_approve
+                WHERE user_approve = ${userId}
+            `;
+        } else if (role === 2) {
+            getListRequestQuery = `
+                SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date
+                FROM purchase_request pr LEFT JOIN plans p ON p.id = pr.plan_id
+                LEFT JOIN users u ON u.id = pr.user_approve
+                WHERE user_id = ${userId}
         `;
+        }
         const requests = await query(getListRequestQuery);
-
         const getListQuery = await query(`SELECT * FROM detail_request`);
-
         const requestData = requests.map(request => {
             return {
                 id: request.id,
@@ -211,7 +244,6 @@ const getListRequest = async (request, response) => {
                 detail: getListQuery.filter(detail => detail.resquest_id === request.id)
             };
         });
-
         return response.status(200).json({
             status: "success",
             data: requestData
@@ -226,7 +258,7 @@ const getListApprove = async (request, response) => {
     try {
         const userId = request.userId;
         const getListApprove = `
-            SELECT a.id, a.purchase_requestID, u.full_name AS user_created, us.full_name AS user_approve, p.name, a.status, a.reason, a.date
+            SELECT a.id, a.purchase_requestID, u.full_name AS user_created, us.full_name AS user_approve, p.name, a.status, a.reason
             FROM approver a LEFT JOIN purchase_request pr ON a.purchase_requestID = pr.id
             LEFT JOIN users u ON u.id = pr.user_id
             LEFT JOIN users us ON us.id = a.approve_user
