@@ -36,7 +36,7 @@ function validateParameters(params, validate, validateType) {
     }
 }
 
-const getListMaterial0 = async (request, response) => {
+const getListMaterial = async (request, response) => {
     try {
         const page = request.query.page;
         const limit = request.query.limit;
@@ -72,7 +72,7 @@ const getListMaterial0 = async (request, response) => {
     }
 };
 
-const getListMaterial = async (request, response) => {
+const getListMaterial0 = async (request, response) => {
     try {
 
         const getListMaterialQuery = `

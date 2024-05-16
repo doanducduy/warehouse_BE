@@ -403,10 +403,10 @@ const getListTask = async (request, response) => {
 const updateProcess = async (request, response) => {
     try {
         // const detailID = request.params.detailId;
-        const planId = request.body.planId;
+        const planId = request.body.detailId;
         const userId = request.userId;
         const status = request.body.status;
-        const updateQuery = `UPDATE detail_plan SET status = ${status} WHERE plan_id = ${planId} AND employee= ${userId}`;
+        const updateQuery = `UPDATE detail_plan SET status = ${status} WHERE id = ${planId} AND employee= ${userId}`;
         await query(updateQuery);
         const checkStatusQuery = `
             SELECT COUNT(*) AS total, SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END) AS totalStatusOne

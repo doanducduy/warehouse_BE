@@ -2,7 +2,7 @@ const { request, response } = require("express");
 const helper = require("./helper");
 const query = require("./sqlPool");
 
-const getListUsers0 = async (request, response) => {
+const getListUsers = async (request, response) => {
     try {
         const page = request.query.page;
         const limit = request.query.limit;
@@ -40,7 +40,7 @@ const getListUsers0 = async (request, response) => {
         return helper.Helper.dbErrorReturn(error, response);
     }
 };
-const getListUsers = async (request, response) => {
+const getListUsers0 = async (request, response) => {
     try {
 
         const getAllUsersQuery = `
