@@ -36,7 +36,7 @@ function validateParameters(params, validate, validateType) {
     }
 }
 
-const getListMaterial = async (request, response) => {
+const getListMaterial0 = async (request, response) => {
     try {
         const page = request.query.page;
         const limit = request.query.limit;
@@ -72,12 +72,11 @@ const getListMaterial = async (request, response) => {
     }
 };
 
-const getListMaterial0 = async (request, response) => {
+const getListMaterial = async (request, response) => {
     try {
 
         const getListMaterialQuery = `
-            SELECT * FROM material
-            ORDER BY id DESC LIMIT ${+limit} OFFSET ${+offset}     
+            SELECT * FROM material 
         `;
         const material = await query(getListMaterialQuery);
         return response.status(200).json({

@@ -2,7 +2,7 @@ const { request, response } = require("express");
 const helper = require("./helper");
 const query = require("./sqlPool");
 
-const getListUsers = async (request, response) => {
+const getListUsers0 = async (request, response) => {
     try {
         const page = request.query.page;
         const limit = request.query.limit;
@@ -40,7 +40,26 @@ const getListUsers = async (request, response) => {
         return helper.Helper.dbErrorReturn(error, response);
     }
 };
+const getListUsers = async (request, response) => {
+    try {
 
+        const getAllUsersQuery = `
+            SELECT u.id, u.user_name, u.full_name, u.address, u.status, ws.name AS workspaceName, r.name AS roleName FROM users u 
+            LEFT JOIN workspaces ws ON u.workspace_id = ws.id
+            LEFT JOIN roles r ON u.role_id = r.id
+            WHERE u.is_deleted = 0 AND u.status = 1 AND ws.is_deleted = 0  
+        `;
+        const users = await query(getAllUsersQuery);
+        return response.status(200).json({
+            status: "success",
+            data:
+                users,
+        },
+        );
+    } catch (error) {
+        return helper.Helper.dbErrorReturn(error, response);
+    }
+};
 const detailUser = async (request, response) => {
     try {
         const userId = request.body.userId;
