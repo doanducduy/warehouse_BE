@@ -49,8 +49,7 @@ const getListMaterial = async (request, response) => {
         const material = await query(getListMaterialQuery);
         const totalMaterialQuery = `
             SELECT COUNT(*) AS count
-            FROM users u LEFT JOIN roles r ON u.role_id = r.id
-            WHERE u.is_deleted=0 AND r.is_deleted=0
+            FROM material 
         `;
 
         const totalPageData = await query(totalMaterialQuery);
@@ -73,6 +72,24 @@ const getListMaterial = async (request, response) => {
     }
 };
 
+const getListMaterial0 = async (request, response) => {
+    try {
+
+        const getListMaterialQuery = `
+            SELECT * FROM material
+            ORDER BY id DESC LIMIT ${+limit} OFFSET ${+offset}     
+        `;
+        const material = await query(getListMaterialQuery);
+        return response.status(200).json({
+            status: "success",
+            data:
+                material,
+        },
+        );
+    } catch (error) {
+        return helper.Helper.dbErrorReturn(error, response);
+    }
+};
 const importRequest = async (request, response, next) => {
     upload(request, response, async function (err) {
         if (err) {
