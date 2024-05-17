@@ -42,7 +42,7 @@ const getListPlan = async (request, response) => {
         const userId = request.userId;
         const role = request.role;
         let getPlanQuery;
-        if (role === 2) {
+        if (role === 3) {
             getPlanQuery = `
                 SELECT p.id, p.name, u.full_name AS user_manage, p.fromDate, p.toDate, p.status
                 FROM plans p LEFT JOIN users u ON p.user_manage = u.id

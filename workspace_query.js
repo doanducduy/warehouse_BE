@@ -23,7 +23,7 @@ const getListWorkspace = async (request, response) => {
 };
 const getUserIsEmployee = async (request, response) => {
     try {
-        const getUserIsEmployeeQuery = `SELECT id, user_name, full_name FROM users WHERE role_id = 3`;
+        const getUserIsEmployeeQuery = `SELECT id, user_name, full_name FROM users WHERE role_id = 4 AND status = 1 AND is_deleted = 0`;
         const users = await query(getUserIsEmployeeQuery);
         return response.status(200).json({
             status: "success",
@@ -39,7 +39,6 @@ const createWorkspace = async (request, response) => {
         const userId = request.body.userId;
         const name = request.body.name;
         const address = request.body.address;
-
         let validate = {};
         if (helper.Helper.checkNullOrEmpty(name)) {
             validate.name = "validate.message.nameRequired";
@@ -72,7 +71,7 @@ const createWorkspace = async (request, response) => {
             const lastInsertedIdQuery = `SELECT LAST_INSERT_ID() AS lastId`;
             const result = await query(lastInsertedIdQuery);
             const workspaceId = result[0].lastId;
-            const updateRoleQuery = `UPDATE users SET role_id = 2, workspace_id = ${workspaceId} WHERE id = ${userId} `;
+            const updateRoleQuery = `UPDATE users SET role_id = 3, workspace_id = ${workspaceId} WHERE id = ${userId} `;
             await query(updateRoleQuery);
             return response.status(200).json({
                 status: "success",
@@ -86,6 +85,13 @@ const createWorkspace = async (request, response) => {
 }
 const updateWorkspace = async (request, response) => {
     try {
+        const roleId = request.roleId;
+        if (roleId !== 2) {
+            return response.status(403).json({
+                status: "error",
+                message: "validate.message.notAdmin",
+            });
+        }
         const workspaceId = request.body.id;
         const newName = request.body.name;
         const newAddress = request.body.address;
@@ -127,6 +133,13 @@ const updateWorkspace = async (request, response) => {
 
 const deleteWorkspace = async (request, response) => {
     try {
+        const roleId = request.roleId;
+        if (roleId !== 2) {
+            return response.status(403).json({
+                status: "error",
+                message: "validate.message.notAdmin",
+            });
+        }
         const workspaceId = request.body.id;
         const getWorkspaceQuery = `SELECT * FROM workspaces WHERE id=${workspaceId} AND is_deleted=0`;
         const workspace = await query(getWorkspaceQuery);
@@ -151,7 +164,13 @@ const getWorkspaceById = async (request, response) => {
     try {
         const userId = request.userId;
         const workspaceId = request.body.id;
-
+        const roleId = request.roleId;
+        if (roleId !== 2) {
+            return response.status(403).json({
+                status: "error",
+                message: "validate.message.notAdmin",
+            });
+        }
         const getWorkspaceQuery = `
             SELECT ws.*, u.full_name AS leader FROM workspaces ws LEFT JOIN users u ON ws.user_id = u.id WHERE ws.id = ${workspaceId} AND ws.is_deleted= 0
         `;

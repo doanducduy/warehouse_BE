@@ -45,7 +45,128 @@ module.exports = {
 
         try {
             //if can verify the token, set req.user and pass to next middleware
+            let adminRole = [2];
+            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+            if (!adminRole.includes(decoded.role)) {
+                return res.status(403).send("Invalid token.");
+            } else {
+                req.userId = decoded.userId;
+                req.role = decoded.role;
+                next();
+            }
+        } catch (ex) {
+            //if invalid token
+            return res.status(403).send("Invalid token.");
+        }
+    },
+
+    validateBossToken: (req, res, next) => {
+        let token = req.headers["authorization"];
+
+        //if no token found, return response (without going to the next middelware)
+        if (!token)
+            return res.status(401).send("Access denied. No token provided.");
+        else {
+            if (token.startsWith("Bearer ")) {
+                token = token.replace("Bearer ", "");
+            } else {
+                return res.status(401).send("Access denied. No token provided.");
+            }
+        }
+
+        try {
+            //if can verify the token, set req.user and pass to next middleware
+            let adminRole = [1];
+            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+            if (!adminRole.includes(decoded.role)) {
+                return res.status(403).send("Invalid token.");
+            } else {
+                req.userId = decoded.userId;
+                req.role = decoded.role;
+                next();
+            }
+        } catch (ex) {
+            //if invalid token
+            return res.status(403).send("Invalid token.");
+        }
+    },
+    validateAdminOrBossToken: (req, res, next) => {
+        let token = req.headers["authorization"];
+
+        //if no token found, return response (without going to the next middelware)
+        if (!token)
+            return res.status(401).send("Access denied. No token provided.");
+        else {
+            if (token.startsWith("Bearer ")) {
+                token = token.replace("Bearer ", "");
+            } else {
+                return res.status(401).send("Access denied. No token provided.");
+            }
+        }
+
+        try {
+            //if can verify the token, set req.user and pass to next middleware
             let adminRole = [1, 2];
+            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+            if (!adminRole.includes(decoded.role)) {
+                return res.status(403).send("Invalid token.");
+            } else {
+                req.userId = decoded.userId;
+                req.role = decoded.role;
+                next();
+            }
+        } catch (ex) {
+            //if invalid token
+            return res.status(403).send("Invalid token.");
+        }
+    },
+    validateLeaderToken: (req, res, next) => {
+        let token = req.headers["authorization"];
+
+        //if no token found, return response (without going to the next middelware)
+        if (!token)
+            return res.status(401).send("Access denied. No token provided.");
+        else {
+            if (token.startsWith("Bearer ")) {
+                token = token.replace("Bearer ", "");
+            } else {
+                return res.status(401).send("Access denied. No token provided.");
+            }
+        }
+
+        try {
+            //if can verify the token, set req.user and pass to next middleware
+            let adminRole = [3];
+            const decoded = jwt.verify(token, process.env.SECRET_KEY);
+            if (!adminRole.includes(decoded.role)) {
+                return res.status(403).send("Invalid token.");
+            } else {
+                req.userId = decoded.userId;
+                req.role = decoded.role;
+                next();
+            }
+        } catch (ex) {
+            //if invalid token
+            return res.status(403).send("Invalid token.");
+        }
+    },
+    validateBossOrLeaderToken: (req, res, next) => {
+        let token = req.headers["authorization"];
+
+        //if no token found, return response (without going to the next middelware)
+        if (!token)
+            return res.status(401).send("Access denied. No token provided.");
+        else {
+            if (token.startsWith("Bearer ")) {
+                token = token.replace("Bearer ", "");
+            } else {
+                return res.status(401).send("Access denied. No token provided.");
+            }
+        }
+
+        try {
+            //if can verify the token, set req.user and pass to next middleware
+            let adminRole = [1, 3];
             const decoded = jwt.verify(token, process.env.SECRET_KEY);
             if (!adminRole.includes(decoded.role)) {
                 return res.status(403).send("Invalid token.");

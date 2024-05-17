@@ -37,9 +37,9 @@ app.post("/api/v1/users/detail-user", middleware.validateAdminToken, user.detail
 app.post("/api/v1/users/add-user", middleware.validateAdminToken, user.addUser);
 app.post("/api/v1/users/delete-user", middleware.validateAdminToken, user.deleteUser);
 app.post("/api/v1/users/update-user", middleware.validateToken, user.updateUser);
-app.post("/api/v1/users/get-list-role", middleware.validateToken, user.getListRole);
+app.post("/api/v1/users/get-list-role", middleware.validateAdminToken, user.getListRole);
 
-app.post("/api/v1/workspaces/get-list-workspaces", middleware.validateAdminToken, workpace.getListWorkspace);
+app.post("/api/v1/workspaces/get-list-workspaces", middleware.validateAdminOrBossToken, workpace.getListWorkspace);
 app.post("/api/v1/workspaces/get-employee", middleware.validateAdminToken, workpace.getUserIsEmployee);
 app.post("/api/v1/workspaces/create-workspace", middleware.validateAdminToken, workpace.createWorkspace);
 app.post("/api/v1/workspaces/update-workspace", middleware.validateAdminToken, workpace.updateWorkspace);
@@ -47,21 +47,21 @@ app.post("/api/v1/workspaces/delete-workspace", middleware.validateAdminToken, w
 app.post("/api/v1/workspaces/get-detail-workspace", middleware.validateAdminToken, workpace.getWorkspaceById);
 /*----- end admin api--------*/
 
-app.post("/api/v1/plans/get-list-plan", middleware.validateAdminToken, plan.getListPlan);
-app.post("/api/v1/plans/create-plan", middleware.validateAdminToken, plan.createPlan);
-app.post("/api/v1/plans/delete-plan", middleware.validateAdminToken, plan.deletePlan);
-app.post("/api/v1/plans/get-detail-plan", middleware.validateAdminToken, plan.getDetailPlan);
-app.post("/api/v1/plans/accept-product", middleware.validateAdminToken, plan.acceptTheProduct);
+app.post("/api/v1/plans/get-list-plan", middleware.validateBossOrLeaderToken, plan.getListPlan);
+app.post("/api/v1/plans/create-plan", middleware.validateLeaderToken, plan.createPlan);
+app.post("/api/v1/plans/delete-plan", middleware.validateLeaderToken, plan.deletePlan);
+app.post("/api/v1/plans/get-detail-plan", middleware.validateBossOrLeaderToken, plan.getDetailPlan);
+app.post("/api/v1/plans/accept-product", middleware.validateBossToken, plan.acceptTheProduct);
 
 app.post("/api/v1/plans/get-list-task", middleware.validateToken, plan.getListTask);
 app.post("/api/v1/plans/update-process", middleware.validateToken, plan.updateProcess);
-app.post("/api/v1/plans/report-process", middleware.validateToken, plan.reportProcess);
+app.post("/api/v1/plans/report-process", middleware.validateBossOrLeaderToken, plan.reportProcess);
 
-app.post("/api/v1/material", middleware.validateAdminToken, material.getListMaterial);
-app.post("/api/v1/material/import-request", middleware.validateAdminToken, material.importRequest);
-app.post("/api/v1/material/approve-request", middleware.validateAdminToken, material.approveRequset);
-app.post("/api/v1/material/get-list-request", middleware.validateAdminToken, material.getListRequest);
-app.post("/api/v1/material/get-list-approve", middleware.validateAdminToken, material.getListApprove);
+app.post("/api/v1/material", middleware.validateBossOrLeaderToken, material.getListMaterial);
+app.post("/api/v1/material/import-request", middleware.validateLeaderToken, material.importRequest);
+app.post("/api/v1/material/approve-request", middleware.validateBossToken, material.approveRequset);
+app.post("/api/v1/material/get-list-request", middleware.validateBossOrLeaderToken, material.getListRequest);
+// app.post("/api/v1/material/get-list-approve", middleware.validateAdminToken, material.getListApprove);
 // Serve Swagger UI at /api-docs endpoint
 app.use("/api/swagger", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 

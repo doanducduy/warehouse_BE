@@ -241,7 +241,7 @@ const getListRequest = async (request, response) => {
                 LEFT JOIN users u ON u.id = pr.user_approve
                 WHERE user_approve = ${userId}
             `;
-        } else if (role === 2) {
+        } else if (role === 3) {
             getListRequestQuery = `
                 SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date
                 FROM purchase_request pr LEFT JOIN plans p ON p.id = pr.plan_id
