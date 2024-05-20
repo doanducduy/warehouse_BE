@@ -433,7 +433,9 @@ const updateProcess = async (request, response) => {
 const acceptTheProduct = async (request, response) => {
     try {
         const planId = request.body.planId;
-        const updateQuery = `UPDATE plans SET acceptance = 1 WHERE id = ${planId}`;
+        const status = request.body.status;
+        const reason = request.body.reason;
+        const updateQuery = `UPDATE plans SET acceptance = ${status}, reason = '${reason}' WHERE id = ${planId}`;
         await query(updateQuery);
         return response.status(200).json({
             status: "success",
