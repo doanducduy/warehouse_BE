@@ -447,7 +447,7 @@ const acceptTheProduct = async (request, response) => {
 
 const reportProcess = async (request, response) => {
     const userId = request.userId;
-    const planId = request.body.id;
+    const planId = request.body.planId;
     const mode = request.body.mode;
 
     try {

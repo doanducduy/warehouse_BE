@@ -85,13 +85,6 @@ const createWorkspace = async (request, response) => {
 }
 const updateWorkspace = async (request, response) => {
     try {
-        const roleId = request.roleId;
-        if (roleId !== 2) {
-            return response.status(403).json({
-                status: "error",
-                message: "validate.message.notAdmin",
-            });
-        }
         const workspaceId = request.body.id;
         const newName = request.body.name;
         const newAddress = request.body.address;
@@ -133,13 +126,6 @@ const updateWorkspace = async (request, response) => {
 
 const deleteWorkspace = async (request, response) => {
     try {
-        const roleId = request.roleId;
-        if (roleId !== 2) {
-            return response.status(403).json({
-                status: "error",
-                message: "validate.message.notAdmin",
-            });
-        }
         const workspaceId = request.body.id;
         const getWorkspaceQuery = `SELECT * FROM workspaces WHERE id=${workspaceId} AND is_deleted=0`;
         const workspace = await query(getWorkspaceQuery);
@@ -162,15 +148,6 @@ const deleteWorkspace = async (request, response) => {
 
 const getWorkspaceById = async (request, response) => {
     try {
-        const userId = request.userId;
-        const workspaceId = request.body.id;
-        const roleId = request.roleId;
-        if (roleId !== 2) {
-            return response.status(403).json({
-                status: "error",
-                message: "validate.message.notAdmin",
-            });
-        }
         const getWorkspaceQuery = `
             SELECT ws.*, u.full_name AS leader FROM workspaces ws LEFT JOIN users u ON ws.user_id = u.id WHERE ws.id = ${workspaceId} AND ws.is_deleted= 0
         `;

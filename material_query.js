@@ -182,7 +182,7 @@ const importRequest = async (request, response, next) => {
             );
         } catch (error) {
             console.log(error);
-            return helper.badRequestReturn(
+            return helper.Helper.badRequestReturn(
                 { message: "formula.fileUploadError" },
                 response
             );
