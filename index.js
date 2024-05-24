@@ -33,7 +33,7 @@ app.post("/api/v1/common/login", common.login);
 
 /*----- start admin api--------*/
 app.post("/api/v1/users/get-list-users", middleware.validateAdminToken, user.getListUsers);
-app.post("/api/v1/users/detail-user", middleware.validateAdminToken, user.detailUser);
+app.post("/api/v1/users/get-profile", middleware.validateToken, user.getProfile);
 app.post("/api/v1/users/add-user", middleware.validateAdminToken, user.addUser);
 app.post("/api/v1/users/delete-user", middleware.validateAdminToken, user.deleteUser);
 app.post("/api/v1/users/update-user", middleware.validateToken, user.updateUser);

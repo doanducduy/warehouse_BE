@@ -10,6 +10,11 @@ const xlsx = require("xlsx");
 const { StatusCodes, ReasonPhrases } = require("http-status-codes");
 const AppError = require("./app_error");
 const excel = require("exceljs");
+let ejs = require("ejs");
+let pdf = require("html-pdf");
+// let path = require("path");
+let fs = require("fs");
+let uuid = require("uuid");
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -342,7 +347,21 @@ const getDetailPlan = async (request, response) => {
             WHERE p.id = ${planId}
         `;
         const plan = await query(getPlanQuery);
-        const getListQuery = await query(`SELECT * FROM detail_plan WHERE plan_id = ${planId}`);
+        const getListQuery = await query(`
+        SELECT dp.id, dp.plan_id, dp.task, u.full_name AS employee, 
+            GROUP_CONCAT(DISTINCT d.device_name) AS device,
+            GROUP_CONCAT(DISTINCT m.name) AS material,
+            dp.quantity, dp.unit, dp.status, dp.fromDate, dp.toDate
+        FROM detail_plan dp 
+        LEFT JOIN users u ON dp.employee = u.id
+        LEFT JOIN (
+            SELECT id, device_name FROM devices) d ON FIND_IN_SET(d.id, dp.device) 
+        LEFT JOIN (
+            SELECT id, name FROM material) m ON FIND_IN_SET(m.id, dp.material)
+        WHERE plan_id = ${planId}
+        GROUP BY dp.id, dp.plan_id, dp.task, u.full_name, dp.quantity, dp.unit, dp.status, dp.fromDate, dp.toDate
+    `);
+
 
         const requestData = plan.map(request => {
             return {
@@ -447,7 +466,7 @@ const acceptTheProduct = async (request, response) => {
     }
 };
 
-const reportProcess = async (request, response) => {
+const reportProcess0 = async (request, response) => {
     const userId = request.userId;
     const planId = request.body.planId;
     const mode = request.body.mode;
@@ -648,6 +667,214 @@ const reportProcess = async (request, response) => {
     }
 };
 
+const reportProcess = async (request, response) => {
+    const userId = request.userId;
+    const planId = request.body.planId;
+    const mode = request.body.mode;
+
+    try {
+        let workspaceName = "";
+        const workspace = await query(`
+            SELECT w.name FROM workspaces w LEFT JOIN users u ON u.workspace_id = w.id WHERE u.id='${userId}'
+        `);
+
+        if (workspace.length > 0) {
+            workspaceName = workspace[0].name;
+        }
+        const plan = await query(`
+            SELECT p.name, u.full_name AS manager, p.fromDate, p.toDate,
+                CASE 
+                    WHEN p.status = 1 THEN 'Đã hoàn thành'
+                    ELSE 'Đang thực hiện'
+                END AS status
+            FROM plans p LEFT JOIN users u ON p.user_manage = u.id 
+            WHERE p.id='${planId}' 
+        `);
+        if (plan.length > 0) {
+            const planDetail = await query(`
+                SELECT dp.plan_id, dp.task, u.full_name, 
+                    (
+                        SELECT GROUP_CONCAT(device_name  SEPARATOR ', ') 
+                        FROM devices 
+                        WHERE FIND_IN_SET(id, dp.device)
+                    ) AS device_names,
+                    (
+                        SELECT GROUP_CONCAT(name SEPARATOR ', ') 
+                        FROM material 
+                        WHERE FIND_IN_SET(id, dp.material)
+                    ) AS material_names, 
+                    dp.quantity, dp.unit, dp.fromDate, dp.toDate, 
+                    CASE 
+                        WHEN dp.status = 1 THEN 'Đã hoàn thành'
+                        ELSE 'Đang thực hiện'
+                    END AS status
+                FROM detail_plan dp LEFT JOIN users u ON u.id = dp.employee
+                WHERE plan_id = ${planId}
+                ORDER BY dp.fromDate
+            `);
+
+            if (planDetail.length > 0) {
+                const workbook = new excel.Workbook();
+                const worksheet = workbook.addWorksheet("Báo cáo tiến độ sản xuất", {
+                    views: [{ showGridLines: false }],
+                });
+
+                worksheet.getCell("A1").value = "XƯỞNG SƠN CẢNH ĐÔNG";
+                worksheet.getCell("A2").value = workspaceName;
+                worksheet.getCell("A3").value = "BÁO CÁO TIẾN ĐỘ SẢN XUẤT";
+                worksheet.addRow([]);
+                let fromDate =
+                    plan[0].fromDate.split("-")[2] +
+                    "-" +
+                    plan[0].fromDate.split("-")[1] +
+                    "-" +
+                    plan[0].fromDate.split("-")[0];
+                let toDate =
+                    plan[0].toDate.split("-")[2] +
+                    "-" +
+                    plan[0].toDate.split("-")[1] +
+                    "-" +
+                    plan[0].toDate.split("-")[0];
+                worksheet.addRow([
+                    "Tên kế hoạch:",
+                    plan[0].name,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ]);
+                worksheet.addRow([
+                    "Người quản lý:",
+                    plan[0].manager,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ]);
+                worksheet.addRow([
+                    "Thời gian:",
+                    fromDate + " đến " + toDate,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ]);
+                worksheet.addRow([
+                    "Trạng thái:",
+                    plan[0].status,
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                    "",
+                ]);
+                worksheet.addRow([]);
+                worksheet.addRow([
+                    "STT",
+                    "Công việc",
+                    "Nhân viên",
+                    "Thiết bị",
+                    "Nguyên vật liệu",
+                    "Số lượng",
+                    "Đơn vị tính",
+                    "Ngày bắt đầu",
+                    "Ngày kết thúc",
+                    "Trạng thái",
+                ]);
+
+                for (let i = 0; i < planDetail.length; i++) {
+                    worksheet.addRow([
+                        i + 1,
+                        planDetail[i].task,
+                        planDetail[i].full_name,
+                        planDetail[i].device_names,
+                        planDetail[i].material_names,
+                        planDetail[i].quantity,
+                        planDetail[i].unit,
+                        planDetail[i].fromDate,
+                        planDetail[i].toDate,
+                        planDetail[i].status,
+                    ]);
+                }
+
+                worksheet.addRow([]);
+                const rowCount = worksheet.rowCount;
+                worksheet.getCell(`H${rowCount + 1}`).value =
+                    "Hà Nội, ngày ... tháng ... năm .....";
+                worksheet.getCell(`H${rowCount + 2}`).value = "NGƯỜI KIỂM TRA";
+
+                // set width for columns
+                const columnWidths = [18, 35, 25, 35, 35, 15, 20, 20, 20, 20];
+                columnWidths.forEach((width, index) => {
+                    worksheet.getColumn(index + 1).width = width;
+                });
+
+                worksheet.mergeCells("A1:C1");
+                worksheet.mergeCells("A2:C2");
+                worksheet.mergeCells("A3:J3");
+                worksheet.mergeCells(`H${rowCount + 1}:J${rowCount + 1}`);
+                worksheet.mergeCells(`H${rowCount + 2}:J${rowCount + 2}`);
+
+                // set height for all rows
+                for (let i = 1; i <= rowCount; i++) {
+                    worksheet.getRow(i).height = 18;
+                }
+
+                const data = [];
+                workbook.eachSheet((sheet) => {
+                    const sheetData = [];
+                    sheet.eachRow((row) => {
+                        sheetData.push(row.values.slice(1));
+                    });
+                    data.push(sheetData);
+                });
+
+                // Flatten data array
+                const flattenedData = data.reduce((acc, val) => acc.concat(val), []);
+
+                if (mode === "preview") {
+                    return response.status(200).json({
+                        bookjson: flattenedData,
+                    });
+                } else {
+                    response.setHeader(
+                        "Content-Type",
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    );
+                    response.setHeader(
+                        "Content-Disposition",
+                        "attachment; filename=" + "tien-do-san-xuat.xlsx"
+                    );
+
+                    return workbook.xlsx.write(response).then(() => response.end());
+                }
+            } else {
+                return helper.Helper.badRequestReturn("nodata", response);
+            }
+        } else {
+            return helper.Helper.badRequestReturn("nodata", response);
+        }
+    } catch (error) {
+        return helper.Helper.dbErrorReturn(error, response);
+    }
+};
 
 module.exports = {
     getListPlan,

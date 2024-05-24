@@ -1,6 +1,8 @@
 const { request, response } = require("express");
 const helper = require("./helper");
 const query = require("./sqlPool");
+const jwt = require('jsonwebtoken');
+const secretKey = 'your-secret-key';
 
 const getListUsers = async (request, response) => {
     try {
@@ -40,29 +42,10 @@ const getListUsers = async (request, response) => {
         return helper.Helper.dbErrorReturn(error, response);
     }
 };
-const getListUsers0 = async (request, response) => {
-    try {
 
-        const getAllUsersQuery = `
-            SELECT u.id, u.user_name, u.full_name, u.address, u.status, ws.name AS workspaceName, r.name AS roleName FROM users u 
-            LEFT JOIN workspaces ws ON u.workspace_id = ws.id
-            LEFT JOIN roles r ON u.role_id = r.id
-            WHERE u.is_deleted = 0 AND u.status = 1 AND ws.is_deleted = 0  
-        `;
-        const users = await query(getAllUsersQuery);
-        return response.status(200).json({
-            status: "success",
-            data:
-                users,
-        },
-        );
-    } catch (error) {
-        return helper.Helper.dbErrorReturn(error, response);
-    }
-};
-const detailUser = async (request, response) => {
+const getProfile = async (request, response) => {
     try {
-        const userId = request.body.userId;
+        const userId = request.userId;
         const getUserQuery = `
             SELECT u.id, u.user_name, u.full_name, u.address, u.status, ws.name AS workspaceName, r.name AS roleName FROM users u 
             LEFT JOIN workspaces ws ON u.workspace_id = ws.id
@@ -70,11 +53,24 @@ const detailUser = async (request, response) => {
             WHERE u.is_deleted = 0 AND u.status = 1 AND u.id = ${userId}
         `;
         const user = await query(getUserQuery);
+
+        if (user.length === 0) {
+            return response.status(404).json({
+                status: "error",
+                message: "User not found",
+            });
+        }
+
+        const userData = user[0];
+        const token = jwt.sign({ id: userData.id, role: userData.roleName }, secretKey, { expiresIn: '1h' });
+
         return response.status(200).json({
             status: "success",
-            data: user,
+            data: userData,
+            token: token,
         });
     } catch (error) {
+        console.error(error);
         return helper.Helper.dbErrorReturn(error, response);
     }
 };
@@ -157,7 +153,6 @@ const updateUser = async (request, response) => {
         const newUserName = request.body.username;
         const newFullName = request.body.full_name;
         const newAddress = request.body.address;
-        const newStatus = request.body.status;
 
         let validate = {};
         if (helper.Helper.checkNullOrEmpty(newUserName)) {
@@ -169,15 +164,12 @@ const updateUser = async (request, response) => {
         if (helper.Helper.checkNullOrEmpty(newAddress)) {
             validate.address = "validate.message.addressRequired";
         }
-        if (helper.Helper.checkNullOrEmpty(newStatus)) {
-            validate.status = "validate.message.statusRequired";
-        }
         if (Object.keys(validate).length > 0) {
             let message = validate;
             return helper.Helper.badRequestReturn(message, response);
         } else {
             const updateUserQuery = `
-                UPDATE users SET username = ${newUserName}, full_name = ${newFullName}, address = ${newAddress}, status = ${newStatus}
+                UPDATE users SET username = ${newUserName}, full_name = ${newFullName}, address = ${newAddress}
                 WHERE id = ${userId} AND is_deleted = 0
             `;
             await query(updateUserQuery);
@@ -205,7 +197,7 @@ const getListRole = async (request, response) => {
 };
 module.exports = {
     getListUsers,
-    detailUser,
+    getProfile,
     addUser,
     deleteUser,
     updateUser,

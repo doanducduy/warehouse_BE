@@ -236,27 +236,32 @@ const getListRequest = async (request, response) => {
         let getListRequestQuery;
         if (role === 1) {
             getListRequestQuery = `
-                SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date
+                SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date, pr.status, pr.reason
                 FROM purchase_request pr LEFT JOIN plans p ON p.id = pr.plan_id
                 LEFT JOIN users u ON u.id = pr.user_approve
                 WHERE user_approve = ${userId}
             `;
         } else if (role === 3) {
             getListRequestQuery = `
-                SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date
+                SELECT pr.id, p.name AS plan, u.full_name AS user_approve, pr.date, pr.status, pr.reason
                 FROM purchase_request pr LEFT JOIN plans p ON p.id = pr.plan_id
                 LEFT JOIN users u ON u.id = pr.user_approve
                 WHERE user_id = ${userId}
-        `;
+            `;
         }
+
         const requests = await query(getListRequestQuery);
-        const getListQuery = await query(`SELECT * FROM detail_request`);
+        const getListQuery = await query(`
+            SELECT dr.id, dr.resquest_id, m.name AS material_id, dr.quantity, dr.unit 
+            FROM detail_request dr LEFT JOIN material m ON dr.material_id = m.id`);
         const requestData = requests.map(request => {
             return {
                 id: request.id,
                 plan: request.plan,
                 user_approve: request.user_approve,
                 date: request.date,
+                status: request.status,
+                reason: request.reason,
                 detail: getListQuery.filter(detail => detail.resquest_id === request.id)
             };
         });

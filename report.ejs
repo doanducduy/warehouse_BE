@@ -1,0 +1,140 @@
+<html>
+
+<head>
+    <style>
+        #table1,
+        #table2 {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #table2 th,
+        #table2 td {
+            text-align: left;
+            padding: 12px;
+        }
+
+        #table2 th,
+        #table2 td {
+            border: 1px solid #dddddd;
+        }
+
+        #table2 th {
+            background-color: #f2f2f2;
+        }
+
+        .empty {
+            border: none;
+        }
+
+        .spacer {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2 style="text-align:left">XƯỞNG PHUN SƠN TĨNH ĐIỆN CẢNH ĐÔNG</h2>
+    <h3 style="text-align: left">
+        <%= workspaceName %>
+    </h3>
+    <h2 style="text-align: center">BÁO CÁO TIẾN ĐỘ SẢN XUẤT</h2>
+    <table id="table1">
+        <tr>
+            <td style="width: 120px;"><b>Tên kế hoạch:</b> </td>
+            <td>
+                <%= planName%>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 120px;">
+                <b>Quản lý:</b>
+            </td>
+            <td>
+                <%= manager %>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 120px;">
+                <b>Thời gian:</b>
+            </td>
+            <td>
+                <%= fromDate %> đến <%= toDate %>
+            </td>
+        </tr>
+        <tr>
+            <td style="width: 120px;"><b>Trạng thái:</b> </td>
+            <td>
+                <%= status %>
+            </td>
+        </tr>
+    </table>
+
+    <h3>Chi tiết kế hoạch:</h3>
+    <table id='table2'>
+        <tr>
+            <th>STT</th>
+            <th>Tên công việc</th>
+            <th>Nhân viên</th>
+            <th>Thiết bị</th>
+            <th>Nguyên vật liệu</th>
+            <th>Số lượng</th>
+            <th>Đon vị tính</th>
+            <th>Ngày bắt đầu</th>
+            <th>Ngày kết thúc</th>
+            <th>Trạng thái</th>
+        </tr>
+        <% if (planDetail.length> 0) { %> <% planDetail.forEach(function(plan,i) { %>
+                <tr>
+                    <td>
+                        <%= i+1 %>
+                    </td>
+                    <td>
+                        <%= plan.task %>
+                    </td>
+                    <td>
+                        <%= plan.full_name %>
+                    </td>
+                    <td>
+                        <%= plan.device_names %>
+                    </td>
+                    <td>
+                        <%= plan.material_names %>
+                    </td>
+                    <td>
+                        <%= plan.quantity %>
+                    </td>
+                    <td>
+                        <%= plan.unit %>
+                    </td>
+                    <td>
+                        <%= plan.fromDate %>
+                    </td>
+                    <td>
+                        <%= plan.toDate %>
+                    </td>
+                    <td>
+                        <%= plan.status %>
+                    </td>
+                </tr>
+                <% }); %>
+                    <% } %>
+    </table>
+    <table>
+        <tr>
+            <td class="empty spacer" colspan="8"></td>
+            <td colspan="2" align="center">
+                <b>Hà Nội, ngày ... tháng ... năm ....</b>
+            </td>
+        </tr>
+        <tr>
+            <td class="empty spacer" colspan="8"></td>
+            <td colspan="2" align="center">
+                <b>Người kiểm tra</b>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

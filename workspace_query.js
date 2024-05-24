@@ -23,7 +23,13 @@ const getListWorkspace = async (request, response) => {
 };
 const getUserIsEmployee = async (request, response) => {
     try {
-        const getUserIsEmployeeQuery = `SELECT id, user_name, full_name FROM users WHERE role_id = 4 AND status = 1 AND is_deleted = 0`;
+        const getUserIsEmployeeQuery = `SELECT 
+        id, 
+        CONCAT(user_name, ' - ', full_name) AS full_name
+    FROM 
+        users 
+    WHERE 
+        role_id = 4 AND status = 1 AND is_deleted = 0`;
         const users = await query(getUserIsEmployeeQuery);
         return response.status(200).json({
             status: "success",
